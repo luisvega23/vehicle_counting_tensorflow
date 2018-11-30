@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 # -*- coding: utf-8 -*-
 # ----------------------------------------------
 # --- Author         : Ahmet Ozlu
@@ -18,7 +18,7 @@ import cv2
 import numpy as np
 import csv
 import time
-
+import datetime as dt
 from collections import defaultdict
 from io import StringIO
 from matplotlib import pyplot as plt
@@ -32,15 +32,17 @@ from utils import visualization_utils as vis_util
 with open('traffic_measurement.csv', 'w') as f:
     writer = csv.writer(f)
     csv_line = \
-        'Vehicle Type/Size, Vehicle Color, Vehicle Movement Direction, Vehicle Speed (km/h)'
+        'Tipo Vehiculo, Color de Vehiculo, Direccion de movimiento, Velocidad vehiculo(km/h),Hora, Minuto'
     writer.writerows([csv_line.split(',')])
 
-if tf.__version__ < '1.4.0':
+'''if tf.__version__ < '1.4.0':
     raise ImportError('Please upgrade your tensorflow installation to v1.4.* or later!'
                       )
+'''
 
 # input video
 cap = cv2.VideoCapture('sub-1504614469486.mp4')
+cap2 =cv2.VideoCapture('GRUA1.mp4')
 
 # Variables
 total_passed_vehicle = 0  # using it to count vehicles
@@ -89,10 +91,11 @@ def load_image_into_numpy_array(image):
 # Detection
 def object_detection_function():
     total_passed_vehicle = 0
-    speed = 'waiting...'
-    direction = 'waiting...'
-    size = 'waiting...'
-    color = 'waiting...'
+    speed = 'esperando..'
+    direction = 'esperando..'
+    size = 'esperando..'
+    color = 'esperando..'
+    control = ''
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
 
@@ -111,13 +114,12 @@ def object_detection_function():
             # for all the frames that are extracted from input video
             while cap.isOpened():
                 (ret, frame) = cap.read()
-
                 if not ret:
                     print ('end of the video file...')
                     break
 
                 input_frame = frame
-
+                height, width, channels = input_frame.shape
                 # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
                 image_np_expanded = np.expand_dims(input_frame, axis=0)
 
@@ -144,29 +146,29 @@ def object_detection_function():
 
                 # insert information text to video frame
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(
-                    input_frame,
-                    'Detected Vehicles: ' + str(total_passed_vehicle),
-                    (10, 35),
-                    font,
-                    0.8,
-                    (0, 0xFF, 0xFF),
-                    2,
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    )
-
+#                cv2.putText(
+#                    input_frame,
+#                    'Detected Vehicles: ' + str(total_passed_vehicle),
+#                    (10, 35),
+#                    font,
+ #                   0.8,
+ #                  (0, 0xFF, 0xFF),
+ #                   2,
+ #                   cv2.FONT_HERSHEY_SIMPLEX,
+ #                   )
+                ROI1,vel1=vis_util.conection_values()
                 # when the vehicle passed over line and counted, make the color of ROI line green
                 if counter == 1:
-                    cv2.line(input_frame, (0, 200), (640, 200), (0, 0xFF, 0), 5)
+                    cv2.line(input_frame, (0, ROI1), (width, ROI1), (0, 0xFF, 0), 5)
                 else:
-                    cv2.line(input_frame, (0, 200), (640, 200), (0, 0, 0xFF), 5)
+                    cv2.line(input_frame, (0, ROI1), (width,ROI1), (0, 0, 0xFF), 5)
 
                 # insert information text to video frame
-                cv2.rectangle(input_frame, (10, 275), (230, 337), (180, 132, 109), -1)
+                cv2.rectangle(input_frame, (10, height-200), (330, height-140), (180, 132, 109), -1)
                 cv2.putText(
                     input_frame,
                     'ROI Line',
-                    (545, 190),
+                    (width-100, ROI1-10),
                     font,
                     0.6,
                     (0, 0, 0xFF),
@@ -175,8 +177,8 @@ def object_detection_function():
                     )
                 cv2.putText(
                     input_frame,
-                    'LAST PASSED VEHICLE INFO',
-                    (11, 290),
+                    'Informacion Ultimo Vehiculo',
+                    (11, height-190),
                     font,
                     0.5,
                     (0xFF, 0xFF, 0xFF),
@@ -185,8 +187,8 @@ def object_detection_function():
                     )
                 cv2.putText(
                     input_frame,
-                    '-Movement Direction: ' + direction,
-                    (14, 302),
+                    '-Sentido del movimiento: ' + direction,
+                    (14, height-180),
                     font,
                     0.4,
                     (0xFF, 0xFF, 0xFF),
@@ -195,8 +197,8 @@ def object_detection_function():
                     )
                 cv2.putText(
                     input_frame,
-                    '-Speed(km/h): ' + speed,
-                    (14, 312),
+                    '-Velocidad(km/h): ' + speed,
+                    (14, height-170),
                     font,
                     0.4,
                     (0xFF, 0xFF, 0xFF),
@@ -206,7 +208,7 @@ def object_detection_function():
                 cv2.putText(
                     input_frame,
                     '-Color: ' + color,
-                    (14, 322),
+                    (14, height-160),
                     font,
                     0.4,
                     (0xFF, 0xFF, 0xFF),
@@ -216,7 +218,7 @@ def object_detection_function():
                 cv2.putText(
                     input_frame,
                     '-Vehicle Size/Type: ' + size,
-                    (14, 332),
+                    (14, height-150),
                     font,
                     0.4,
                     (0xFF, 0xFF, 0xFF),
@@ -225,14 +227,22 @@ def object_detection_function():
                     )
 
                 cv2.imshow('vehicle detection', input_frame)
-
+                
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
 
+                if cv2.waitKey(1) & 0xFF == ord('r'):
+                    control = 'r'
+
+                if control == 'r':
+                    control_flag(control);
+
+
                 if csv_line != 'not_available':
                     with open('traffic_measurement.csv', 'a') as f:
+                      
                         writer = csv.writer(f)
-                        (size, color, direction, speed) = \
+                        (size, color, direction, speed,h,m) = \
                             csv_line.split(',')
                         writer.writerows([csv_line.split(',')])
             cap.release()

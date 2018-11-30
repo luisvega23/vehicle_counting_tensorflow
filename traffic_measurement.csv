@@ -1,3 +1,5 @@
-Vehicle Type/Size, Vehicle Color, Vehicle Movement Direction, Vehicle Speed (km/h)
-car,white,down,45.88960859510634
-car,blue,down,64.08913082546658
+Tipo Vehiculo, Color de Vehiculo, Direccion de movimiento, Velocidad vehiculo(km/h),Hora, Minuto
+car,white,down,17.00634214613173,15,26
+car,white,down,34.18923801845975,15,26
+car,white,down,22.94480429755317,15,26
+car,blue,down,32.04456541273329,15,26

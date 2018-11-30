@@ -25,7 +25,7 @@ import tensorflow as tf
 import cv2
 import numpy
 import os
-
+import datetime as dt
 # image utils - image saver import
 from utils.image_utils import image_saver
 
@@ -37,7 +37,26 @@ from utils.color_recognition_module import color_recognition_api
 
 # Variables
 is_vehicle_detected = [0]
-ROI_POSITION = 200
+
+def control_flag(var):
+  if var == 'r':
+    flag = 0; 
+  else:
+    flag = 1
+  return flag;
+
+def get_teclado(var):
+  return var;
+
+
+
+flag = 0; 
+if flag == 0:
+  ROI=int(input("ROI"))
+  vel=int(input("VEL"))
+  sen=int(input("SENTIDO"))
+  flag=1
+
 
 _TITLE_LEFT_MARGIN = 10
 _TITLE_TOP_MARGIN = 10
@@ -174,12 +193,11 @@ def draw_bounding_box_on_image(current_frame_number,image,
 
   predicted_speed = "n.a." # means not available, it is just initialization
   predicted_direction = "n.a." # means not available, it is just initialization
-
   image_temp = numpy.array(image)
   detected_vehicle_image = image_temp[int(top):int(bottom), int(left):int(right)]
 
-  if(bottom > ROI_POSITION): # if the vehicle get in ROI area, vehicle predicted_speed predicted_color algorithms are called - 200 is an arbitrary value, for my case it looks very well to set position of ROI line at y pixel 200
-        predicted_direction, predicted_speed,  is_vehicle_detected, update_csv = speed_prediction.predict_speed(top, bottom, right, left, current_frame_number, detected_vehicle_image, ROI_POSITION)
+  if(bottom > ROI): # if the vehicle get in ROI area, vehicle predicted_speed predicted_color algorithms are called - 200 is an arbitrary value, for my case it looks very well to set position of ROI line at y pixel 200
+        predicted_direction, predicted_speed,  is_vehicle_detected, update_csv = speed_prediction.predict_speed(top, bottom, right, left, current_frame_number, detected_vehicle_image, ROI,vel,sen)
 
   predicted_color = color_recognition_api.color_recognition(detected_vehicle_image)
   
@@ -191,8 +209,11 @@ def draw_bounding_box_on_image(current_frame_number,image,
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
   # instead of above.
+  h=dt.datetime.now().hour  
+  m=dt.datetime.now().minute
+
   display_str_list[0] = predicted_color + " " + display_str_list[0]
-  csv_line = predicted_color + "," + str (predicted_direction) + "," + str(predicted_speed) # csv line created
+  csv_line = predicted_color + "," + str (predicted_direction) + "," + str(predicted_speed)+ ","+ str(h) + "," +str(m) # csv line created
   display_str_heights = [font.getsize(ds)[1] for ds in display_str_list]
 
   # Each display_str has a top and bottom margin of 0.05x.
@@ -223,7 +244,7 @@ def draw_bounding_box_on_image(current_frame_number,image,
 def draw_bounding_boxes_on_image_array(image,
                                        boxes,
                                        color='red',
-                                       thickness=4,
+                                       thickness=3,
                                        display_str_list_list=()):
   """Draws bounding boxes on image (numpy array).
 
@@ -250,7 +271,7 @@ def draw_bounding_boxes_on_image_array(image,
 def draw_bounding_boxes_on_image(image,
                                  boxes,
                                  color='red',
-                                 thickness=4,
+                                 thickness=3,
                                  display_str_list_list=()):
   """Draws bounding boxes on image.
 
@@ -562,4 +583,6 @@ def add_cdf_image_summary(values, name):
     return image
   cdf_plot = tf.py_func(cdf_plot, [values], tf.uint8)
   tf.summary.image(name, cdf_plot)
+def conection_values():
+  return(ROI,vel)
 

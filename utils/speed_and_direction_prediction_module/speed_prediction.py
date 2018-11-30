@@ -19,7 +19,9 @@ def predict_speed(
     left,
     current_frame_number,
     crop_img,
-    roi_position,
+    ROI,
+    vel,
+    sen,
     ):
     speed = 'n.a.'  # means not available, it is just initialization
     direction = 'n.a.'  # means not available, it is just initialization
@@ -27,18 +29,17 @@ def predict_speed(
     isInROI = True  # is the object that is inside Region Of Interest
     update_csv = False
 
-    if bottom < 250:
+    if bottom < ROI:
         scale_constant = 1  # scale_constant is used for manual scaling because we did not performed camera calibration
-    elif bottom > 250 and bottom < 320:
+    elif bottom > ROI and bottom < ROI+100:
         scale_constant = 2  # scale_constant is used for manual scaling because we did not performed camera calibration
     else:
         isInROI = False
-
     if len(bottom_position_of_detected_vehicle) != 0 and bottom \
-        - bottom_position_of_detected_vehicle[0] > 0 and 205 \
+        - bottom_position_of_detected_vehicle[0] > 0 and ROI \
         < bottom_position_of_detected_vehicle[0] \
-        and bottom_position_of_detected_vehicle[0] < 210 \
-        and roi_position < bottom:
+        and bottom_position_of_detected_vehicle[0] < ROI+10\
+        and ROI < bottom:
         is_vehicle_detected.insert(0, 1)
         update_csv = True
         image_saver.save_image(crop_img)  # save detected vehicle image
@@ -48,8 +49,11 @@ def predict_speed(
     # print("bottom: " + str(bottom))
     if bottom > bottom_position_of_detected_vehicle[0]:
         direction = 'down'
+        sent=0
     else:
         direction = 'up'
+        sent=1
+    
 
     if isInROI:
         pixel_length = bottom - bottom_position_of_detected_vehicle[0]
@@ -59,7 +63,13 @@ def predict_speed(
         if scale_real_time_passed != 0:
             speed = scale_real_length / scale_real_time_passed / scale_constant  # performing manual scaling because we have not performed camera calibration
             speed = speed / 6 * 40  # use reference constant to get vehicle speed prediction in kilometer unit
+            if (speed>vel):
+                print("Alarma de sobrepaso de velocidad revise el historial")
+            if(sen!=sent):
+                print("Alarma de circulacion en sentido contrario, revise historial")
             current_frame_number_list.insert(0, current_frame_number)
             bottom_position_of_detected_vehicle.insert(0, bottom)
-
+    
+        
+    print ("speed: "+str(speed)+" "+ "direction: "+str(direction)+" "+"Detection: "+str(is_vehicle_detected));
     return (direction, speed, is_vehicle_detected, update_csv)
