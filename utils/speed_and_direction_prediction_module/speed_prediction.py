@@ -6,10 +6,23 @@
 # --- Date           : 27th January 2018
 # ----------------------------------------------
 from utils.image_utils import image_saver
+from utils.Tornado import Alarm
+from utils.TimeManage import TimeParser
+from datetime import datetime, timedelta
+import time
 
 is_vehicle_detected = [0]
 current_frame_number_list = [0]
 bottom_position_of_detected_vehicle = [0]
+c = 0
+
+def count_plus():
+    global c
+    c = c+3;
+
+def count_minus():
+    global c 
+    c = c-1
 
 
 def predict_speed(
@@ -23,6 +36,7 @@ def predict_speed(
     vel,
     sen,
     ):
+    global c
     speed = 'n.a.'  # means not available, it is just initialization
     direction = 'n.a.'  # means not available, it is just initialization
     scale_constant = 1  # manual scaling because we did not performed camera calibration
@@ -54,8 +68,9 @@ def predict_speed(
         direction = 'up'
         sent=1
     
-
     if isInROI:
+        timeNow = str(datetime.utcnow())
+        timeNow = (timeNow.split('.'))[0]
         pixel_length = bottom - bottom_position_of_detected_vehicle[0]
         scale_real_length = pixel_length * 44  # multiplied by 44 to convert pixel length to real length in meters (chenge 44 to get length in meters for your case)
         total_time_passed = current_frame_number - current_frame_number_list[0]
@@ -64,8 +79,16 @@ def predict_speed(
             speed = scale_real_length / scale_real_time_passed / scale_constant  # performing manual scaling because we have not performed camera calibration
             speed = speed / 6 * 40  # use reference constant to get vehicle speed prediction in kilometer unit
             if (speed>vel):
-                print("Alarma de sobrepaso de velocidad revise el historial")
+                if( c == 0 ):
+                    print("Alarma de sobrepaso de velocidad revise el historial")
+                    Alarm.RaiseAlarm("Velocidad", "warning", "0", "exceso de velocidad", timeNow)
+                    count_plus()
+                else:
+                    count_minus()
+                    print ("en el else, cont = ",c)
+
             if(sen!=sent):
+                Alarm.RaiseAlarm("Sentido", "compare_arrows", '0', "sentido contrario", timeNow)
                 print("Alarma de circulacion en sentido contrario, revise historial")
             current_frame_number_list.insert(0, current_frame_number)
             bottom_position_of_detected_vehicle.insert(0, bottom)
