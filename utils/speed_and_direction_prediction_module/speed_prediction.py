@@ -6,7 +6,7 @@
 # --- Date           : 27th January 2018
 # ----------------------------------------------
 from utils.image_utils import image_saver
-from utils.Tornado import Alarm
+from utils.Tornado import AlarmRequests
 from utils.TimeManage import TimeParser
 from datetime import datetime, timedelta
 import time
@@ -18,7 +18,7 @@ c = 0
 
 def count_plus():
     global c
-    c = c+3;
+    c = c+5;
 
 def count_minus():
     global c 
@@ -81,14 +81,14 @@ def predict_speed(
             if (speed>vel):
                 if( c == 0 ):
                     print("Alarma de sobrepaso de velocidad revise el historial")
-                    Alarm.RaiseAlarm("Velocidad", "warning", "0", "exceso de velocidad", timeNow)
+                    AlarmRequests.RaiseAlarm("Velocidad", "warning", "0", "exceso de velocidad", timeNow)
                     count_plus()
                 else:
                     count_minus()
                     print ("en el else, cont = ",c)
 
             if(sen!=sent):
-                Alarm.RaiseAlarm("Sentido", "compare_arrows", '0', "sentido contrario", timeNow)
+                AlarmRequests.RaiseAlarm("Sentido", "compare_arrows", '0', "sentido contrario", timeNow)
                 print("Alarma de circulacion en sentido contrario, revise historial")
             current_frame_number_list.insert(0, current_frame_number)
             bottom_position_of_detected_vehicle.insert(0, bottom)
