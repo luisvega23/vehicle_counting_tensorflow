@@ -35,6 +35,8 @@ from utils.speed_and_direction_prediction_module import speed_prediction
 # color recognition module - import
 from utils.color_recognition_module import color_recognition_api
 
+from utils.TextManagment import write_text as wt
+
 # Variables
 is_vehicle_detected = [0]
 
@@ -47,15 +49,6 @@ def control_flag(var):
 
 def get_teclado(var):
   return var;
-
-
-
-flag = 0; 
-if flag == 0:
-  ROI=int(input("ROI"))
-  vel=int(input("VEL"))
-  sen=int(input("SENTIDO"))
-  flag=1
 
 
 _TITLE_LEFT_MARGIN = 10
@@ -178,6 +171,15 @@ def draw_bounding_box_on_image(current_frame_number,image,
       ymin, xmin, ymax, xmax as relative to the image.  Otherwise treat
       coordinates as absolute.
   """
+
+  variables = wt.getVariables()
+  #print(variables)
+  flag = 0; 
+  if flag == 0:
+    ROI=int(variables[2])
+    vel=int(variables[3])
+    sen=int(variables[4])
+    flag=1
   csv_line = "" # to create new csv line consists of vehicle type, predicted_speed, color and predicted_direction
   update_csv = False # update csv for a new vehicle that are passed from ROI - just one new line for each vehicles
   is_vehicle_detected = [0]
@@ -584,5 +586,9 @@ def add_cdf_image_summary(values, name):
   cdf_plot = tf.py_func(cdf_plot, [values], tf.uint8)
   tf.summary.image(name, cdf_plot)
 def conection_values():
+  variables = wt.getVariables()
+  ROI=int(variables[2])
+  vel=int(variables[3])
+  sen=int(variables[4])
   return(ROI,vel)
 

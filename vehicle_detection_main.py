@@ -23,6 +23,8 @@ from collections import defaultdict
 from io import StringIO
 from matplotlib import pyplot as plt
 from PIL import Image
+from utils.TextManagment import write_text as wt
+
 
 # Object detection imports
 from utils import label_map_util
@@ -41,8 +43,16 @@ with open('traffic_measurement.csv', 'w') as f:
 '''
 
 # input video
-cap = cv2.VideoCapture('sub-1504614469486.mp4')
-cap2 =cv2.VideoCapture('GRUA1.mp4')
+lista = sys.argv
+print(lista)
+print("consiguiendo\n")
+wt.Escribirtxt(lista)
+print(lista)
+lista = wt.getVariables()
+print(lista)
+cap = cv2.VideoCapture(lista[0])
+#cap = cv2.VideoCapture('sub-1504614469486.mp4')
+#cap2 =cv2.VideoCapture('GRUA1.mp4')
 
 # Variables
 total_passed_vehicle = 0  # using it to count vehicles

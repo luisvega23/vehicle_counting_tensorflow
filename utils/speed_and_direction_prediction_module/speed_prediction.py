@@ -9,6 +9,7 @@ from utils.image_utils import image_saver
 from utils.Tornado import AlarmRequests
 from utils.TimeManage import TimeParser
 from datetime import datetime, timedelta
+from utils.TextManagment import write_text as wt
 import time
 
 is_vehicle_detected = [0]
@@ -42,7 +43,7 @@ def predict_speed(
     scale_constant = 1  # manual scaling because we did not performed camera calibration
     isInROI = True  # is the object that is inside Region Of Interest
     update_csv = False
-
+    datos = wt.getVariables();
     if bottom < ROI:
         scale_constant = 1  # scale_constant is used for manual scaling because we did not performed camera calibration
     elif bottom > ROI and bottom < ROI+100:
@@ -81,14 +82,14 @@ def predict_speed(
             if (speed>vel):
                 if( c == 0 ):
                     print("Alarma de sobrepaso de velocidad revise el historial")
-                    AlarmRequests.RaiseAlarm("Velocidad", "warning", "0", "exceso de velocidad", timeNow)
+                    AlarmRequests.RaiseAlarm("Velocidad", "warning", str(datos[1]), "exceso de velocidad", timeNow)
                     count_plus()
                 else:
                     count_minus()
                     print ("en el else, cont = ",c)
 
             if(sen!=sent):
-                AlarmRequests.RaiseAlarm("Sentido", "compare_arrows", '0', "sentido contrario", timeNow)
+                AlarmRequests.RaiseAlarm("Sentido", "compare_arrows", str(datos[1]), "sentido contrario", timeNow)
                 print("Alarma de circulacion en sentido contrario, revise historial")
             current_frame_number_list.insert(0, current_frame_number)
             bottom_position_of_detected_vehicle.insert(0, bottom)
